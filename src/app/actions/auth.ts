@@ -15,13 +15,20 @@ function getAppUrl(): string {
     return appUrl.trim().replace(/\/$/, "")
   }
 
-  // Use Vercel URL if available (includes protocol)
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`
+  // Use Vercel URL if available (Vercel automatically provides this in production)
+  // VERCEL_URL format: "assistant-360.vercel.app" (without protocol)
+  const vercelUrl = process.env.VERCEL_URL
+  if (vercelUrl) {
+    return `https://${vercelUrl}`
   }
 
   // Fallback to localhost for development
-  console.warn("[Auth] NEXT_PUBLIC_APP_URL not set, using localhost fallback")
+  console.warn(
+    "[Auth] NEXT_PUBLIC_APP_URL not set and VERCEL_URL not available, using localhost fallback"
+  )
+  console.warn(
+    "[Auth] To fix: Set NEXT_PUBLIC_APP_URL=https://assistant-360.vercel.app in Vercel environment variables"
+  )
   return "http://localhost:3000"
 }
 
