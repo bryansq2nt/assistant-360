@@ -6,6 +6,7 @@ interface BuildWhatsAppLinkParams {
   number: string
   greeting: string
   businessName: string
+  publicSlug: string
 }
 
 /**
@@ -17,9 +18,10 @@ export function buildWhatsAppLink({
   number,
   greeting,
   businessName,
+  publicSlug,
 }: BuildWhatsAppLinkParams): string {
   // Format: greeting + business name + [slug]
-  const text = `${greeting} ${businessName}`
+  const text = `${greeting} ${businessName} [${publicSlug}]`
 
   // URL encode the text
   const encodedText = encodeURIComponent(text)
@@ -32,7 +34,7 @@ export function buildWhatsAppLink({
  * Gets the WhatsApp number from environment variables.
  */
 export function getWhatsAppNumber(): string {
-  return process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+15713761694"
+  return process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "5713761694"
 }
 
 /**

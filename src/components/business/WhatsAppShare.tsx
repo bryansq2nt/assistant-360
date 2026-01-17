@@ -21,7 +21,8 @@ export function WhatsAppShare({ businessName, publicSlug }: WhatsAppShareProps) 
   const whatsappLink = buildWhatsAppLink({
     number: getWhatsAppNumber(),
     greeting: getWhatsAppGreeting(),
-    businessName
+    businessName,
+    publicSlug,
   })
 
   const handleCopyLink = async () => {
