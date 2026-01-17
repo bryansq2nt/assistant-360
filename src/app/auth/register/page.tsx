@@ -1,35 +1,18 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
-import { signIn } from "@/app/actions/auth"
+import { signUp } from "@/app/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 
-export default function LoginPage() {
+export default function RegisterPage() {
+  const [fullName, setFullName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
-
-  // Check for error or message in URL params
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const errorParam = params.get("error")
-    const messageParam = params.get("message")
-    if (errorParam) {
-      setError(decodeURIComponent(errorParam))
-      // Clean up URL
-      window.history.replaceState({}, "", window.location.pathname)
-    }
-    if (messageParam === "check_email") {
-      setMessage("Please check your email to confirm your account before signing in.")
-      // Clean up URL
-      window.history.replaceState({}, "", window.location.pathname)
-    }
-  }, [])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -39,14 +22,15 @@ export default function LoginPage() {
     const formData = new FormData()
     formData.append("email", email)
     formData.append("password", password)
+    formData.append("fullName", fullName)
 
-    const result = await signIn(formData)
+    const result = await signUp(formData)
 
     if (result?.error) {
       setError(result.error)
       setIsLoading(false)
     }
-    // If no error, signIn will redirect to /dashboard
+    // If no error, signUp will redirect to /dashboard
   }
 
   return (
@@ -54,11 +38,20 @@ export default function LoginPage() {
       <div className="container mx-auto max-w-md pt-20">
         <Card>
           <CardHeader>
-            <CardTitle>Sign in to Assistant 360</CardTitle>
-            <CardDescription>Enter your email and password to continue</CardDescription>
+            <CardTitle>Create an account</CardTitle>
+            <CardDescription>Enter your information to get started</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Input
+                  type="text"
+                  placeholder="Full name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
               <div className="space-y-2">
                 <Input
                   type="email"
@@ -72,30 +65,25 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <Input
                   type="password"
-                  placeholder="Password"
+                  placeholder="Password (min. 6 characters)"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
                 />
               </div>
-              {message && (
-                <div className="rounded-md bg-muted p-3 text-sm text-foreground">
-                  {message}
-                </div>
-              )}
               {error && (
                 <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
                   {error}
                 </div>
               )}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign in"}
+                {isLoading ? "Creating account..." : "Create account"}
               </Button>
               <div className="text-center text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <Link href="/auth/register" className="text-primary hover:underline">
-                  Sign up
+                Already have an account?{" "}
+                <Link href="/auth/login" className="text-primary hover:underline">
+                  Sign in
                 </Link>
               </div>
             </form>

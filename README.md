@@ -25,14 +25,26 @@ Before you begin, ensure you have the following installed:
    cp .env.example .env.local
    ```
    
-   Edit `.env.local` and add your Supabase credentials:
+   Edit `.env.local` and add your credentials:
    ```
+   # Supabase
    NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+   
+   # App URL
    NEXT_PUBLIC_APP_URL=http://localhost:3000
+   
+   # WhatsApp (optional - defaults provided)
+   NEXT_PUBLIC_WHATSAPP_NUMBER=5713761694
+   NEXT_PUBLIC_WHATSAPP_DEFAULT_GREETING=hola
    ```
 
-> **Note:** Authentication and database tables will be set up in later stages. Right now, we're just connecting to Supabase.
+4. **Create database tables**
+   - In your Supabase dashboard, go to SQL Editor
+   - Open the file `supabase-schema.sql` from this project
+   - Copy and paste the entire SQL content into the SQL Editor
+   - Click "Run" to execute the SQL
+   - This will create the `business_profiles` and `business_offerings` tables with Row Level Security (RLS) enabled
 
 ## Local Setup
 

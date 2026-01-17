@@ -10,21 +10,38 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get("code")
   const next = requestUrl.searchParams.get("next") || "/dashboard"
 
-  if (code) {
-    try {
-      const supabase = await createServerClient()
-
-      const { error } = await supabase.auth.exchangeCodeForSession(code)
-
-      if (!error) {
-        return NextResponse.redirect(new URL(next, request.url))
-      }
-    } catch (error) {
-      // If Supabase isn't configured or there's an error, redirect to login
-      console.error("Auth callback error:", error)
-    }
+  if (!code) {
+    console.error("[Auth Callback] No code provided in URL")
+    return NextResponse.redirect(new URL("/auth/login?error=no_code", request.url))
   }
 
-  // If there's an error or no code, redirect to login
-  return NextResponse.redirect(new URL("/auth/login", request.url))
+  try {
+    const supabase = await createServerClient()
+
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (error) {
+      console.error("[Auth Callback] Error exchanging code:", error.message)
+      return NextResponse.redirect(
+        new URL(`/auth/login?error=${encodeURIComponent(error.message)}`, request.url)
+      )
+    }
+
+    if (data.session) {
+      console.log("[Auth Callback] Session created successfully, redirecting to:", next)
+      // Construct redirect URL using the same origin as the request
+      const redirectUrl = new URL(next, request.url)
+      return NextResponse.redirect(redirectUrl)
+    } else {
+      console.error("[Auth Callback] No session after code exchange")
+      return NextResponse.redirect(new URL("/auth/login?error=no_session", request.url))
+    }
+  } catch (error) {
+    // If Supabase isn't configured or there's an error, redirect to login
+    console.error("[Auth Callback] Unexpected error:", error)
+    const errorMessage = error instanceof Error ? error.message : "unknown_error"
+    return NextResponse.redirect(
+      new URL(`/auth/login?error=${encodeURIComponent(errorMessage)}`, request.url)
+    )
+  }
 }

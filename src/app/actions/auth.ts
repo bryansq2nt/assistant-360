@@ -4,56 +4,63 @@ import { createServerClient } from "@/lib/supabase"
 import { redirect } from "next/navigation"
 
 /**
- * Gets the app URL for redirects.
- * Prioritizes NEXT_PUBLIC_APP_URL, then VERCEL_URL, then falls back to localhost.
+ * Signs in a user with email and password.
  */
-function getAppUrl(): string {
-  // Use explicit app URL if set
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL
-  if (appUrl && appUrl.trim() !== "") {
-    // Ensure no trailing slash
-    return appUrl.trim().replace(/\/$/, "")
-  }
-
-  // Use Vercel URL if available (Vercel automatically provides this in production)
-  // VERCEL_URL format: "assistant-360.vercel.app" (without protocol)
-  const vercelUrl = process.env.VERCEL_URL
-  if (vercelUrl) {
-    return `https://${vercelUrl}`
-  }
-
-  // Fallback to localhost for development
-  console.warn(
-    "[Auth] NEXT_PUBLIC_APP_URL not set and VERCEL_URL not available, using localhost fallback"
-  )
-  console.warn(
-    "[Auth] To fix: Set NEXT_PUBLIC_APP_URL=https://assistant-360.vercel.app in Vercel environment variables"
-  )
-  return "http://localhost:3000"
-}
-
-/**
- * Sends a magic link to the provided email address.
- */
-export async function sendMagicLink(formData: FormData) {
+export async function signIn(formData: FormData) {
   const email = formData.get("email") as string
+  const password = formData.get("password") as string
 
   if (!email || typeof email !== "string") {
     return { error: "Email is required" }
   }
 
+  if (!password || typeof password !== "string") {
+    return { error: "Password is required" }
+  }
+
   const supabase = await createServerClient()
-  const appUrl = getAppUrl()
 
-  // Log the redirect URL for debugging
-  console.log("[Auth] NEXT_PUBLIC_APP_URL:", process.env.NEXT_PUBLIC_APP_URL || "(not set)")
-  console.log("[Auth] VERCEL_URL:", process.env.VERCEL_URL || "(not set)")
-  console.log("[Auth] Sending magic link with redirect URL:", `${appUrl}/auth/callback`)
-
-  const { error } = await supabase.auth.signInWithOtp({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
+    password,
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  redirect("/dashboard")
+}
+
+/**
+ * Signs up a new user with email and password.
+ */
+export async function signUp(formData: FormData) {
+  const email = formData.get("email") as string
+  const password = formData.get("password") as string
+  const fullName = formData.get("fullName") as string
+
+  if (!email || typeof email !== "string") {
+    return { error: "Email is required" }
+  }
+
+  if (!password || typeof password !== "string") {
+    return { error: "Password is required" }
+  }
+
+  if (password.length < 6) {
+    return { error: "Password must be at least 6 characters" }
+  }
+
+  const supabase = await createServerClient()
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
     options: {
-      emailRedirectTo: `${appUrl}/auth/callback`,
+      data: {
+        full_name: fullName || "",
+      },
     },
   })
 
@@ -61,7 +68,16 @@ export async function sendMagicLink(formData: FormData) {
     return { error: error.message }
   }
 
-  return { success: true }
+  // Check if email confirmation is required
+  // If user has a session, they're already logged in (email confirmation disabled)
+  // If no session, email confirmation is required
+  if (data.session) {
+    // User is automatically logged in (email confirmation disabled in Supabase)
+    redirect("/dashboard")
+  } else {
+    // Email confirmation is required - redirect to login with success message
+    redirect("/auth/login?message=check_email")
+  }
 }
 
 /**
