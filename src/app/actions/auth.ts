@@ -9,8 +9,10 @@ import { redirect } from "next/navigation"
  */
 function getAppUrl(): string {
   // Use explicit app URL if set
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL
+  if (appUrl && appUrl.trim() !== "") {
+    // Ensure no trailing slash
+    return appUrl.trim().replace(/\/$/, "")
   }
 
   // Use Vercel URL if available (includes protocol)
@@ -19,6 +21,7 @@ function getAppUrl(): string {
   }
 
   // Fallback to localhost for development
+  console.warn("[Auth] NEXT_PUBLIC_APP_URL not set, using localhost fallback")
   return "http://localhost:3000"
 }
 
@@ -34,6 +37,11 @@ export async function sendMagicLink(formData: FormData) {
 
   const supabase = await createServerClient()
   const appUrl = getAppUrl()
+
+  // Log the redirect URL for debugging
+  console.log("[Auth] NEXT_PUBLIC_APP_URL:", process.env.NEXT_PUBLIC_APP_URL || "(not set)")
+  console.log("[Auth] VERCEL_URL:", process.env.VERCEL_URL || "(not set)")
+  console.log("[Auth] Sending magic link with redirect URL:", `${appUrl}/auth/callback`)
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
