@@ -4,6 +4,25 @@ import { createServerClient } from "@/lib/supabase"
 import { redirect } from "next/navigation"
 
 /**
+ * Gets the app URL for redirects.
+ * Prioritizes NEXT_PUBLIC_APP_URL, then VERCEL_URL, then falls back to localhost.
+ */
+function getAppUrl(): string {
+  // Use explicit app URL if set
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL
+  }
+
+  // Use Vercel URL if available (includes protocol)
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
+
+  // Fallback to localhost for development
+  return "http://localhost:3000"
+}
+
+/**
  * Sends a magic link to the provided email address.
  */
 export async function sendMagicLink(formData: FormData) {
@@ -14,7 +33,7 @@ export async function sendMagicLink(formData: FormData) {
   }
 
   const supabase = await createServerClient()
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  const appUrl = getAppUrl()
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
