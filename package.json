@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:migrate": "node scripts/show-migration.js all",
+    "db:migrate:apply": "npx supabase db push",
+    "db:link": "npx supabase link --project-ref"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",

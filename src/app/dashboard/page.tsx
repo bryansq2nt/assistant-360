@@ -48,6 +48,22 @@ export default async function DashboardPage() {
           </div>
         </div>
 
+        {/* Add Service/Product Buttons */}
+        {businesses && businesses.length > 0 && (
+          <div className="mb-6 flex gap-4">
+            <Link href="/dashboard/offerings/new?type=service">
+              <Button variant="default">
+                ➕ Agregar servicio
+              </Button>
+            </Link>
+            <Link href="/dashboard/offerings/new?type=product">
+              <Button variant="default">
+                ➕ Agregar producto
+              </Button>
+            </Link>
+          </div>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle>My Businesses</CardTitle>

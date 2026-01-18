@@ -46,6 +46,17 @@ export default async function BusinessDetailPage({ params }: PageProps) {
     .eq("business_id", id)
     .order("created_at", { ascending: true })
 
+  // Parse category from business_type (format: "Category: Subcategory" or "Otro: customText")
+  const parseCategory = (businessType: string | null): string | null => {
+    if (!businessType) return null
+    if (businessType.startsWith("Otro:")) return "Otro"
+    const parts = businessType.split(":")
+    return parts[0] || null
+  }
+
+  const category = parseCategory(business.business_type)
+  const isComidaCategory = category === "Comida"
+
   return (
     <main className="min-h-screen bg-background p-8">
       <div className="container mx-auto max-w-4xl pt-20">
@@ -74,40 +85,30 @@ export default async function BusinessDetailPage({ params }: PageProps) {
           {/* Business Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Business Information</CardTitle>
+              <CardTitle>Información del negocio</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Business Type</p>
+                  <p className="text-sm font-medium text-muted-foreground">Tipo de negocio</p>
                   <p className="mt-1">{business.business_type}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Offer Type</p>
-                  <p className="mt-1">{business.offer_type}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Hours</p>
+                  <p className="text-sm font-medium text-muted-foreground">Horario</p>
                   <p className="mt-1">{business.hours}</p>
                 </div>
-                {business.service_area && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Service Area</p>
-                    <p className="mt-1">{business.service_area}</p>
-                  </div>
-                )}
                 {business.booking_method && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Booking Method</p>
+                    <p className="text-sm font-medium text-muted-foreground">Método de reserva</p>
                     <p className="mt-1">{business.booking_method}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Primary Language</p>
+                  <p className="text-sm font-medium text-muted-foreground">Idioma principal</p>
                   <p className="mt-1">{business.primary_language}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Brand Tone</p>
+                  <p className="text-sm font-medium text-muted-foreground">Tono de marca</p>
                   <p className="mt-1">{business.brand_tone}</p>
                 </div>
                 <div>
@@ -118,7 +119,7 @@ export default async function BusinessDetailPage({ params }: PageProps) {
 
               {business.about && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">About</p>
+                  <p className="text-sm font-medium text-muted-foreground">Descripción</p>
                   <p className="mt-1 whitespace-pre-wrap">{business.about}</p>
                 </div>
               )}
@@ -129,6 +130,43 @@ export default async function BusinessDetailPage({ params }: PageProps) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Location and Coverage */}
+          {(business.business_address || business.service_area || (isComidaCategory && business.delivery_area)) && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Ubicación y cobertura</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {business.business_address && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Dirección del negocio</p>
+                    <p className="mt-1">{business.business_address}</p>
+                  </div>
+                )}
+                {business.service_area && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Áreas de servicio</p>
+                    <p className="mt-1">{business.service_area}</p>
+                  </div>
+                )}
+                {isComidaCategory && (
+                  <>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Delivery</p>
+                      <p className="mt-1">{business.delivery_area ? "Sí" : "No"}</p>
+                    </div>
+                    {business.delivery_area && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Áreas de delivery</p>
+                        <p className="mt-1">{business.delivery_area}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Offerings */}
           <Card>

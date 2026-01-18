@@ -1,7 +1,8 @@
 import { z } from "zod"
 
-export const businessTypeSchema = z.enum(["SERVICE", "PRODUCT", "BOTH"])
-export type BusinessType = z.infer<typeof businessTypeSchema>
+// Business type is now a string that can be formatted as "Category: Subcategory" or "Otro: custom text"
+export const businessTypeSchema = z.string().min(1, "Business type is required")
+export type BusinessType = string
 
 export const offerKindSchema = z.enum(["SERVICE", "PRODUCT"])
 export type OfferKind = z.infer<typeof offerKindSchema>
@@ -29,15 +30,12 @@ export const offeringSchema = z.object({
 export const createBusinessSchema = z.object({
   business_name: z.string().min(1, "Business name is required"),
   business_type: businessTypeSchema,
-  offer_type: businessTypeSchema,
   hours: z.string().min(1, "Hours are required"),
   service_area: z.string().optional(),
+  business_address: z.string().optional(),
+  delivery_area: z.string().optional(),
   tagline: z.string().optional(),
   about: z.string().optional(),
-  booking_method: bookingMethodSchema.optional(),
-  primary_language: z.string().default("es"),
-  brand_tone: brandToneSchema.default("FRIENDLY"),
-  offerings: z.array(offeringSchema).min(1, "At least one offering is required"),
 })
 
 export type CreateBusinessInput = z.infer<typeof createBusinessSchema>
